@@ -144,9 +144,6 @@ index.html
 * Mobile app version (PWA / React Native)
 
 ---
-SCREENSHOT
-https://github.com/pinkidagar18/University-Navigation-System/blob/c476bf0a920b5714e93fb0a9043b2ec9ba042199/Screenshot%202025-12-15%20204925.png
-
 ## ✨ What Makes This Project Advanced
 
 * 🚀 Fully frontend-powered **map engine without Google Maps API**
