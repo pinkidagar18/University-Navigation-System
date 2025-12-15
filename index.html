@@ -1,0 +1,3109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVSU Dudhola Navigation System - Enhanced</title>
+  <!-- Load React -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Load Babel for JSX support -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body, #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    
+    /* Google Maps style scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+    
+    /* Enhanced Google Maps-like base map */
+    .google-maps-base {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      position: relative;
+    }
+    
+    /* Enhanced road styling */
+    .road-primary {
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    
+    .road-secondary {
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    }
+    
+    /* Google Maps-style building shadows */
+    .building-shadow {
+      filter: drop-shadow(2px 2px 8px rgba(0,0,0,0.15));
+    }
+    
+    /* Enhanced location pulse animation */
+    @keyframes locationPulse {
+      0% { 
+        transform: scale(1); 
+        opacity: 1; 
+      }
+      70% { 
+        transform: scale(2); 
+        opacity: 0; 
+      }
+      100% { 
+        transform: scale(2); 
+        opacity: 0; 
+      }
+    }
+    
+    .location-pulse::before {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(66, 133, 244, 0.4);
+      animation: locationPulse 2s infinite;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+    }
+    
+    /* Enhanced route animation */
+    @keyframes routeFlow {
+      0% { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: -20; }
+    }
+    
+    .route-animated {
+      stroke-dasharray: 10, 10;
+      animation: routeFlow 1s linear infinite;
+    }
+    
+    /* Google Maps-style satellite view */
+    .satellite-enhanced {
+      background: 
+        radial-gradient(circle at 25% 35%, #8B7355 0%, transparent 25%),
+        radial-gradient(circle at 75% 25%, #A0956B 0%, transparent 30%),
+        radial-gradient(circle at 15% 85%, #7A6F4D 0%, transparent 35%),
+        radial-gradient(circle at 85% 75%, #968B6F 0%, transparent 25%),
+        radial-gradient(circle at 45% 15%, #4A5D3A 0%, transparent 40%),
+        radial-gradient(circle at 55% 85%, #556B42 0%, transparent 35%),
+        linear-gradient(135deg, #6B5F47 0%, #8B7F63 50%, #7A6E52 100%);
+      position: relative;
+    }
+    
+    /* Enhanced building hover effects */
+    .building-interactive {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    
+    .building-interactive:hover {
+      transform: translateY(-2px) scale(1.05);
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)) brightness(1.1);
+    }
+    
+    /* Google-style search suggestions */
+    .search-suggestion {
+      transition: all 0.2s ease;
+    }
+    
+    .search-suggestion:hover {
+      background: linear-gradient(90deg, #f8fafc, #e2e8f0);
+      transform: translateX(4px);
+    }
+    
+    /* Enhanced route markers */
+    .route-marker {
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+    
+    /* Smooth transitions */
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .slide-in-left {
+      animation: slideInLeft 0.3s ease-out;
+    }
+    
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+    
+    .slide-in-right {
+      animation: slideInRight 0.3s ease-out;
+    }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    
+    /* Button interactions */
+    .button-interactive {
+      transition: all 0.2s ease;
+    }
+    
+    .button-interactive:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .button-interactive:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Enhanced tooltips */
+    .tooltip-enhanced {
+      background: linear-gradient(145deg, #ffffff, #f8fafc);
+      border-radius: 12px;
+      box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Emergency pulse */
+    @keyframes emergencyPulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    
+    .emergency-pulse {
+      animation: emergencyPulse 2s infinite;
+    }
+    
+    /* Traffic simulation */
+    .traffic-light {
+      animation: trafficFlow 3s linear infinite;
+    }
+    
+    @keyframes trafficFlow {
+      0% { fill: #22c55e; }
+      33% { fill: #eab308; }
+      66% { fill: #ef4444; }
+      100% { fill: #22c55e; }
+    }
+    
+    /* Enhanced path network */
+    .path-network {
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    
+    /* Realistic grass and vegetation */
+    .vegetation-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 20%, #4ade80 2px, transparent 2px),
+        radial-gradient(circle at 80% 40%, #22c55e 1px, transparent 1px),
+        radial-gradient(circle at 40% 80%, #16a34a 1.5px, transparent 1.5px);
+      background-size: 20px 20px, 15px 15px, 25px 25px;
+    }
+    
+    /* Water features */
+    .water-feature {
+      background: linear-gradient(45deg, #06b6d4, #0891b2);
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+    
+    /* Enhanced notification system */
+    .notification-slide {
+      animation: slideInFromTop 0.5s ease-out;
+    }
+    
+    @keyframes slideInFromTop {
+      from { transform: translateY(-100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* SVSU Logo Animation */
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+    
+    .logo-float {
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    /* Enhanced Welcome Animation */
+    @keyframes welcomeGlow {
+      0%, 100% { text-shadow: 0 0 20px rgba(255,255,255,0.8); }
+      50% { text-shadow: 0 0 30px rgba(255,255,255,1), 0 0 40px rgba(66, 133, 244, 0.5); }
+    }
+
+    .welcome-glow {
+      animation: welcomeGlow 2s ease-in-out infinite;
+    }
+
+    /* University Colors */
+    .svsu-primary {
+      background: linear-gradient(135deg, #3b4995, #2d3748);
+    }
+
+    .svsu-secondary {
+      background: linear-gradient(135deg, #f7931e, #ff6b35);
+    }
+
+    /* Enhanced Splash Screen */
+    .splash-enhanced {
+      background: linear-gradient(135deg, #3b4995 0%, #2d3748 50%, #1a202c 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash-enhanced::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(circle at 25% 25%, rgba(247, 147, 30, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(59, 73, 149, 0.1) 0%, transparent 50%);
+      animation: backgroundMove 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes backgroundMove {
+      0% { transform: rotate(0deg) scale(1); }
+      100% { transform: rotate(5deg) scale(1.1); }
+    }
+
+    /* Enhanced skill elements */
+    .skill-badge {
+      background: linear-gradient(135deg, rgba(247, 147, 30, 0.9), rgba(255, 107, 53, 0.9));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* University motto animation */
+    @keyframes mottoSlide {
+      0% { opacity: 0; transform: translateX(-50px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    .motto-slide {
+      animation: mottoSlide 1.5s ease-out 2s both;
+    }
+
+    /* Floating animation for background elements */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    /* NEW ADVANCED FEATURES */
+    
+    /* Enhanced Transport Mode Icons */
+    .transport-mode-icon {
+      transition: all 0.3s ease;
+    }
+    
+    .transport-mode-active {
+      background: linear-gradient(135deg, #4285F4, #34A853);
+      box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+    }
+
+    /* Advanced Route Visualization */
+    .route-path-enhanced {
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 2px 8px rgba(66, 133, 244, 0.3));
+    }
+
+    /* Navigation Step Indicator */
+    .nav-step-indicator {
+      background: linear-gradient(135deg, #4285F4, #1976D2);
+      border: 3px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    /* Enhanced Accessibility Features */
+    .high-contrast {
+      filter: contrast(1.5) brightness(1.2);
+    }
+    
+    .large-text {
+      font-size: 1.2em !important;
+    }
+    
+    .reduce-motion * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    /* Voice Command Indicator */
+    .voice-recording {
+      background: radial-gradient(circle, #ff4444, #cc0000);
+      animation: voicePulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes voicePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Enhanced Status Indicators */
+    .status-indicator {
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Real-time Updates Animation */
+    .live-update {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .live-update::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Emergency Features */
+    .emergency-panel {
+      background: linear-gradient(135deg, #ff4444, #cc0000);
+      backdrop-filter: blur(15px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Advanced Building Information */
+    .building-detail-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95));
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    /* QR Code Animation */
+    .qr-code-container {
+      animation: qrFadeIn 0.5s ease-out;
+    }
+
+    @keyframes qrFadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    // Enhanced React hooks and utilities
+    const MapContext = React.createContext(null);
+    
+    const useDebounce = (value, delay) => {
+      const [debouncedValue, setDebouncedValue] = React.useState(value);
+      
+      React.useEffect(() => {
+        const handler = setTimeout(() => {
+          setDebouncedValue(value);
+        }, delay);
+        
+        return () => {
+          clearTimeout(handler);
+        };
+      }, [value, delay]);
+      
+      return debouncedValue;
+    };
+
+    // Enhanced notification system
+    const useNotification = () => {
+      const [notifications, setNotifications] = React.useState([]);
+      
+      const addNotification = (message, type = 'info', duration = 5000) => {
+        const id = Date.now();
+        const notification = { id, message, type, duration };
+        
+        setNotifications(prev => [...prev, notification]);
+        
+        if (duration > 0) {
+          setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+          }, duration);
+        }
+        
+        return id;
+      };
+      
+      const removeNotification = (id) => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      };
+      
+      return { notifications, addNotification, removeNotification };
+    };
+
+    // Enhanced Voice navigation hook
+    const useVoiceNavigation = () => {
+      const [isVoiceEnabled, setIsVoiceEnabled] = React.useState(false);
+      const [voiceSupported, setVoiceSupported] = React.useState(false);
+      
+      React.useEffect(() => {
+        setVoiceSupported('speechSynthesis' in window);
+      }, []);
+      
+      const speak = (text, rate = 1, pitch = 1) => {
+        if (!voiceSupported || !isVoiceEnabled) return;
+        
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = rate;
+        utterance.pitch = pitch;
+        utterance.volume = 0.8;
+        
+        window.speechSynthesis.speak(utterance);
+      };
+      
+      const toggleVoice = () => {
+        setIsVoiceEnabled(!isVoiceEnabled);
+        if (!isVoiceEnabled) {
+          speak("Voice navigation enabled for SVSU Dudhola");
+        }
+      };
+      
+      return { isVoiceEnabled, voiceSupported, speak, toggleVoice };
+    };
+
+    // Weather simulation hook
+    const useWeather = () => {
+      const [weather, setWeather] = React.useState({
+        condition: 'sunny',
+        temperature: 25,
+        humidity: 60,
+        windSpeed: 5
+      });
+      
+      React.useEffect(() => {
+        const interval = setInterval(() => {
+          const conditions = ['sunny', 'cloudy', 'rainy', 'windy'];
+          const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
+          
+          setWeather(prev => ({
+            ...prev,
+            condition: randomCondition,
+            temperature: Math.round(20 + Math.random() * 15),
+            humidity: Math.round(40 + Math.random() * 40),
+            windSpeed: Math.round(2 + Math.random() * 10)
+          }));
+        }, 30000);
+        
+        return () => clearInterval(interval);
+      }, []);
+      
+      return weather;
+    };
+
+    // Enhanced geolocation hook
+    const useGeolocation = () => {
+      const [location, setLocation] = React.useState(null);
+      const [error, setError] = React.useState(null);
+      const [loading, setLoading] = React.useState(false);
+
+      const getCurrentLocation = () => {
+        if (!navigator.geolocation) {
+          setError('Geolocation is not supported by this browser.');
+          return;
+        }
+
+        setLoading(true);
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLat = position.coords.latitude;
+            const userLon = position.coords.longitude;
+            
+            const campusLat = 28.4089;
+            const campusLon = 77.0378;
+            
+            const latScale = 50000;
+            const lonScale = 70000;
+            
+            const campusCenterX = 450;
+            const campusCenterY = 300;
+            
+            const deltaLat = userLat - campusLat;
+            const deltaLon = userLon - campusLon;
+            
+            let mapX = campusCenterX + (deltaLon * lonScale);
+            let mapY = campusCenterY - (deltaLat * latScale);
+            
+            const isOnCampus = Math.abs(deltaLat) < 0.01 && Math.abs(deltaLon) < 0.01;
+            
+            if (!isOnCampus) {
+              const demoLocations = [
+                { x: 216, y: 180, name: "Near Admin Block" },
+                { x: 433, y: 385, name: "Near Library" },
+                { x: 630, y: 160, name: "Near Auditorium" },
+                { x: 433, y: 100, name: "Near Parking Area" },
+                { x: 433, y: 515, name: "Near CNC Labs" },
+                { x: 400, y: 300, name: "Campus Center" }
+              ];
+              
+              const demoLocation = demoLocations[Math.floor(Math.random() * demoLocations.length)];
+              mapX = demoLocation.x;
+              mapY = demoLocation.y;
+              
+              setError(`Demo mode: Simulating location ${demoLocation.name}`);
+            } else {
+              setError(null);
+            }
+            
+            mapX = Math.max(80, Math.min(820, mapX));
+            mapY = Math.max(80, Math.min(520, mapY));
+            
+            setLocation({
+              latitude: userLat,
+              longitude: userLon,
+              mapX: mapX,
+              mapY: mapY,
+              isOnCampus: isOnCampus,
+              accuracy: position.coords.accuracy
+            });
+            setLoading(false);
+          },
+          (error) => {
+            setLoading(false);
+            let errorMessage = '';
+            
+            switch(error.code) {
+              case error.PERMISSION_DENIED:
+                errorMessage = "Location access denied by user.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMessage = "Location information is unavailable.";
+                break;
+              case error.TIMEOUT:
+                errorMessage = "Location request timed out.";
+                break;
+              default:
+                errorMessage = "An unknown error occurred.";
+                break;
+            }
+            
+            setError(errorMessage);
+            
+            const fallbackLocations = [
+              { x: 300, y: 250, desc: "Academic Area" },
+              { x: 500, y: 350, desc: "Central Campus" },
+              { x: 600, y: 200, desc: "Eastern Campus" },
+              { x: 350, y: 400, desc: "Southern Campus" },
+              { x: 450, y: 150, desc: "Northern Campus" }
+            ];
+            
+            const fallback = fallbackLocations[Math.floor(Math.random() * fallbackLocations.length)];
+            
+            setLocation({
+              latitude: 28.4089,
+              longitude: 77.0378,
+              mapX: fallback.x,
+              mapY: fallback.y,
+              isOnCampus: true,
+              accuracy: null,
+              isFallback: true,
+              fallbackDesc: fallback.desc
+            });
+          },
+          { 
+            enableHighAccuracy: true, 
+            timeout: 15000, 
+            maximumAge: 300000
+          }
+        );
+      };
+
+      return { location, error, loading, getCurrentLocation };
+    };
+
+    // SVSU Logo Component
+    const SVSULogo = ({ size = 120 }) => (
+      <div className="flex flex-col items-center space-y-2">
+        <div 
+          className="relative logo-float"
+          style={{ width: size, height: size }}
+        >
+          {/* Outer ring with decorative elements */}
+          <div className="absolute inset-0 rounded-full border-4 border-orange-400 border-opacity-50">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-lg"
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: `translate(-50%, -50%) rotate(${i * 45}deg) translateY(-${size/2 + 10}px)`
+                }}
+              />
+            ))}
+          </div>
+          
+          {/* Main logo container */}
+          <div className="absolute inset-2 rounded-full svsu-primary shadow-2xl flex items-center justify-center overflow-hidden">
+            {/* Inner design elements */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* WiFi/connectivity symbol */}
+              <div className="absolute top-2 w-6 h-4">
+                <div className="w-full h-full relative">
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-3 h-2 border-2 border-white border-b-0 rounded-t-full"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 -translate-y-2 w-5 h-3 border-2 border-white border-b-0 rounded-t-full"></div>
+                </div>
+              </div>
+              
+              {/* Central screen/monitor */}
+              <div className="w-12 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded border-2 border-gray-300 relative shadow-lg">
+                <div className="absolute inset-1 bg-black rounded-sm"></div>
+                <div className="absolute top-1.5 left-1.5 right-1.5 bottom-2 bg-gradient-to-br from-blue-400 to-green-400 rounded-sm opacity-80"></div>
+                {/* Navigation arrow */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <div className="w-0 h-0 border-l-2 border-r-2 border-b-3 border-transparent border-b-orange-400"></div>
+                </div>
+              </div>
+              
+              {/* Skill/tool symbol (like a pen nib) */}
+              <div className="absolute bottom-4 w-8 h-12">
+                <div className="w-full h-full relative">
+                  {/* Pen handle */}
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2 h-8 svsu-secondary rounded-t-full"></div>
+                  {/* Pen nib */}
+                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-4 h-6 bg-gradient-to-t from-yellow-400 to-yellow-300 rounded-t-full shadow-md">
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-gray-700 rounded-full"></div>
+                  </div>
+                  {/* Tool symbol */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-1 h-3 bg-white rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* University text on logo */}
+          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 bg-orange-600 text-white text-xs px-2 py-0.5 rounded font-bold shadow-md">
+            SVSU
+          </div>
+        </div>
+        
+        {/* University name in Hindi */}
+        <div className="text-orange-500 text-sm font-semibold text-center motto-slide">
+          श्री विश्वकर्मा कौशल्य विश्वविद्यालय
+        </div>
+      </div>
+    );
+    
+    // Enhanced notification component
+    const NotificationToast = ({ notifications, removeNotification }) => {
+      if (notifications.length === 0) return null;
+      
+      return (
+        <div className="fixed top-4 right-4 z-50 space-y-2">
+          {notifications.map(notification => (
+            <div 
+              key={notification.id}
+              className={`notification-slide px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 max-w-md ${
+                notification.type === 'success' ? 'bg-green-500 text-white' :
+                notification.type === 'error' ? 'bg-red-500 text-white' :
+                notification.type === 'warning' ? 'bg-yellow-500 text-black' :
+                'bg-blue-500 text-white'
+              }`}
+            >
+              <i className="material-icons text-sm">
+                {notification.type === 'success' ? 'check_circle' :
+                 notification.type === 'error' ? 'error' :
+                 notification.type === 'warning' ? 'warning' :
+                 'info'}
+              </i>
+              <span className="flex-1 text-sm">{notification.message}</span>
+              <button 
+                onClick={() => removeNotification(notification.id)}
+                className="text-white hover:text-gray-200 button-interactive"
+              >
+                <i className="material-icons text-sm">close</i>
+              </button>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    // Enhanced SearchBox Component with Voice Search
+    const SearchBox = ({ 
+      searchTerm, setSearchTerm, showDirections, setShowDirections, 
+      endPoint, onQuickDirection, voiceSupported, isVoiceEnabled, toggleVoice 
+    }) => {
+      const [voiceSearching, setVoiceSearching] = React.useState(false);
+      
+      const startVoiceSearch = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+          alert('Voice search not supported in this browser');
+          return;
+        }
+        
+        const recognition = new window.webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        
+        setVoiceSearching(true);
+        
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          setSearchTerm(transcript);
+          setVoiceSearching(false);
+        };
+        
+        recognition.onerror = () => {
+          setVoiceSearching(false);
+        };
+        
+        recognition.onend = () => {
+          setVoiceSearching(false);
+        };
+        
+        recognition.start();
+      };
+      
+      return (
+        <div className="flex items-center bg-white rounded-lg shadow-lg w-full max-w-2xl px-4 py-3 border border-gray-200">
+          {!showDirections ? (
+            <>
+              <i className="material-icons text-gray-500 mr-3">search</i>
+              <input
+                type="text"
+                className="bg-transparent border-none outline-none flex-1 text-gray-700 placeholder-gray-400"
+                placeholder="Search SVSU Dudhola Campus..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                aria-label="Search campus"
+              />
+              
+              {voiceSupported && (
+                <button 
+                  onClick={startVoiceSearch}
+                  className={`ml-2 p-2 rounded-full button-interactive ${voiceSearching ? 'voice-recording text-white animate-pulse' : 'text-gray-500 hover:bg-gray-100'}`}
+                  disabled={voiceSearching}
+                  aria-label="Voice search"
+                >
+                  <i className="material-icons text-sm">
+                    {voiceSearching ? 'mic' : 'mic_none'}
+                  </i>
+                </button>
+              )}
+              
+              <button 
+                onClick={onQuickDirection}
+                className="ml-2 p-2 text-blue-500 hover:bg-blue-50 rounded-full button-interactive"
+                aria-label="Quick directions"
+                title="Get directions to nearest building"
+              >
+                <i className="material-icons text-sm">near_me</i>
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => setShowDirections(false)} 
+                className="mr-3 p-1 rounded-full hover:bg-gray-100 button-interactive"
+                aria-label="Back to search"
+              >
+                <i className="material-icons text-gray-500">arrow_back</i>
+              </button>
+              <div className="flex-1">
+                <div className="text-sm font-bold text-gray-800">Directions</div>
+                <div className="text-xs text-gray-500 truncate">{endPoint ? `To: ${endPoint}` : 'Select destination'}</div>
+              </div>
+              
+              {voiceSupported && (
+                <button 
+                  onClick={toggleVoice}
+                  className={`ml-2 p-2 rounded-full button-interactive ${isVoiceEnabled ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                  aria-label="Toggle voice navigation"
+                >
+                  <i className="material-icons text-sm">
+                    {isVoiceEnabled ? 'volume_up' : 'volume_off'}
+                  </i>
+                </button>
+              )}
+            </>
+          )}
+          {searchTerm && (
+            <button 
+              onClick={() => setSearchTerm('')} 
+              className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 button-interactive"
+              aria-label="Clear search"
+            >
+              <i className="material-icons text-sm">close</i>
+            </button>
+          )}
+        </div>
+      );
+    };
+
+    // Enhanced DirectionsPanel Component
+    const DirectionsPanel = ({ 
+      currentRoute, startPoint, endPoint, setStartPoint, setEndPoint, 
+      buildings, entryPoints, handleReset, transportMode, setTransportMode,
+      isNavigating, setIsNavigating, currentStep, setCurrentStep,
+      location, showMyLocation, speak, addNotification, routeOptions, setRouteOptions
+    }) => {
+      
+      const handleStartNavigation = () => {
+        if (!endPoint) {
+          addNotification("Please select a destination first", "warning");
+          return;
+        }
+        
+        if (!currentRoute) {
+          addNotification("Route calculation in progress...", "info");
+          return;
+        }
+        
+        if (currentRoute && currentRoute.directions) {
+          setIsNavigating(true);
+          setCurrentStep(0);
+          
+          speak(`Starting navigation to ${endPoint}. ${currentRoute.directions[0].instruction}`);
+          addNotification(`Navigation started to ${endPoint}`, "success");
+          
+          let step = 0;
+          const navigationInterval = setInterval(() => {
+            step++;
+            if (step >= currentRoute.directions.length) {
+              clearInterval(navigationInterval);
+              setIsNavigating(false);
+              setCurrentStep(-1);
+              speak(`You have arrived at your destination: ${endPoint}`);
+              addNotification("You have arrived at your destination!", "success");
+            } else {
+              setCurrentStep(step);
+              speak(currentRoute.directions[step].instruction);
+            }
+          }, 4000);
+        }
+      };
+
+      const handleQuickDirection = (buildingName) => {
+        setEndPoint(buildingName);
+        if (location && showMyLocation) {
+          setStartPoint('My Location');
+        }
+        speak(`Directions set to ${buildingName}`);
+      };
+
+      return (
+        <div className="w-96 bg-white border-r border-gray-200 z-20 flex flex-col slide-in-left shadow-lg">
+          {/* Enhanced Transport mode selection */}
+          <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex space-x-1 mb-4 bg-white rounded-lg p-1 shadow-sm">
+              <button 
+                className={`flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium transition-all button-interactive transport-mode-icon ${
+                  transportMode === 'driving' ? 'transport-mode-active text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setTransportMode('driving')}
+                aria-label="Driving directions"
+              >
+                <i className="material-icons text-sm mr-1">directions_car</i>
+                Driving
+              </button>
+              <button 
+                className={`flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium transition-all button-interactive transport-mode-icon ${
+                  transportMode === 'walking' ? 'transport-mode-active text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setTransportMode('walking')}
+                aria-label="Walking directions"
+              >
+                <i className="material-icons text-sm mr-1">directions_walk</i>
+                Walking
+              </button>
+              <button 
+                className={`flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium transition-all button-interactive transport-mode-icon ${
+                  transportMode === 'cycling' ? 'transport-mode-active text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setTransportMode('cycling')}
+                aria-label="Cycling directions"
+              >
+                <i className="material-icons text-sm mr-1">directions_bike</i>
+                Cycling
+              </button>
+            </div>
+            
+            {/* Enhanced Start and end point selection */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-xs text-white font-bold shadow-md">A</div>
+                <select 
+                  className="flex-1 bg-transparent border-none outline-none text-gray-700 cursor-pointer"
+                  value={startPoint}
+                  onChange={(e) => setStartPoint(e.target.value)}
+                  aria-label="Starting point"
+                >
+                  <option value="My Location">
+                    📍 My Location {location && showMyLocation ? 
+                      (location.isOnCampus ? '(On Campus)' : '(Off Campus)') : 
+                      '(Tap location button)'}
+                  </option>
+                  {entryPoints.map(entry => (
+                    <option key={entry.id} value={entry.name}>🚪 {entry.name}</option>
+                  ))}
+                  {buildings.map(building => (
+                    <option key={building.id} value={building.name}>🏢 {building.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex items-center space-x-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-xs text-white font-bold shadow-md">B</div>
+                <select 
+                  className="flex-1 bg-transparent border-none outline-none text-gray-700 cursor-pointer"
+                  value={endPoint}
+                  onChange={(e) => setEndPoint(e.target.value)}
+                  aria-label="Destination"
+                >
+                  <option value="">🎯 Select destination</option>
+                  {buildings.map(building => (
+                    <option key={building.id} value={building.name}>🏢 {building.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          {/* Enhanced Route options */}
+          {currentRoute && (
+            <div className="p-4 border-b border-gray-200 bg-blue-50">
+              <div className="text-sm font-medium mb-3 text-gray-800">Route Preferences</div>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="route" 
+                    value="fastest"
+                    checked={routeOptions === 'fastest'}
+                    onChange={(e) => setRouteOptions(e.target.value)}
+                    className="text-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">🚀 Fastest Route</span>
+                </label>
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="route" 
+                    value="shortest"
+                    checked={routeOptions === 'shortest'}
+                    onChange={(e) => setRouteOptions(e.target.value)}
+                    className="text-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">📏 Shortest Route</span>
+                </label>
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="route" 
+                    value="scenic"
+                    checked={routeOptions === 'scenic'}
+                    onChange={(e) => setRouteOptions(e.target.value)}
+                    className="text-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">🌳 Scenic Route</span>
+                </label>
+              </div>
+            </div>
+          )}
+          
+          {/* Enhanced Route information */}
+          {currentRoute ? (
+            <div className="overflow-auto flex-1 fade-in">
+              <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 live-update">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-2xl font-bold text-gray-800">{currentRoute.distanceInMeters} m</div>
+                    <div className="text-sm text-gray-600 flex items-center mt-1">
+                      <i className="material-icons text-sm mr-2 text-blue-500">
+                        {transportMode === 'walking' ? 'directions_walk' : 
+                         transportMode === 'cycling' ? 'directions_bike' : 'directions_car'}
+                      </i>
+                      About {currentRoute.time}
+                    </div>
+                    {currentRoute.weatherWarning && (
+                      <div className="text-xs text-orange-600 mt-2 bg-orange-50 p-2 rounded border border-orange-200">
+                        ⚠️ {currentRoute.weatherWarning}
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    className={`${isNavigating ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} text-white py-3 px-4 rounded-lg shadow-lg text-sm font-medium flex items-center transition-all button-interactive`}
+                    onClick={isNavigating ? () => {setIsNavigating(false); setCurrentStep(-1);} : handleStartNavigation}
+                    aria-label={isNavigating ? "Stop navigation" : "Start navigation"}
+                  >
+                    <i className="material-icons text-sm mr-2">
+                      {isNavigating ? 'stop' : 'navigation'}
+                    </i>
+                    {isNavigating ? 'Stop' : 'Start'}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Enhanced Turn-by-turn directions */}
+              <div className="p-4">
+                <div className="text-sm font-medium text-gray-800 mb-3">Turn-by-turn directions</div>
+                {currentRoute.directions.map((direction, index) => (
+                  <div key={index} className={`flex py-3 border-b border-gray-100 transition-all rounded-lg ${
+                    currentStep === index ? 'bg-blue-50 border-blue-200 shadow-sm nav-step-indicator' : 'hover:bg-gray-50'
+                  }`}>
+                    <div className="flex-shrink-0 mr-4 w-8">
+                      {index === 0 ? (
+                        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-xs text-white font-bold shadow-md">A</div>
+                      ) : index === currentRoute.directions.length - 1 ? (
+                        <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-xs text-white font-bold shadow-md">B</div>
+                      ) : (
+                        <div className="h-8 flex items-center justify-center">
+                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center shadow-sm">
+                            <i className="material-icons text-gray-600 text-sm">
+                              {direction.instruction.includes('right') ? 'turn_right' :
+                               direction.instruction.includes('left') ? 'turn_left' : 'arrow_upward'}
+                            </i>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className={`font-medium ${currentStep === index ? 'text-blue-600' : 'text-gray-800'}`}>
+                        {direction.instruction}
+                        {currentStep === index && (
+                          <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-full animate-pulse">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                      {direction.distance > 0 && (
+                        <div className="text-sm text-gray-500 mt-1">{direction.distance} m</div>
+                      )}
+                      {direction.landmarks && (
+                        <div className="text-xs text-gray-600 mt-1 bg-gray-50 px-2 py-1 rounded">
+                          📍 {direction.landmarks}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-gray-500">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <i className="material-icons text-4xl text-gray-300">map</i>
+              </div>
+              <p className="text-center mb-4 font-medium">
+                {endPoint ? 'Calculating best route...' : 'Where would you like to go?'}
+              </p>
+              {!endPoint && (
+                <div className="text-center w-full">
+                  <p className="text-sm text-gray-400 mb-4">Popular destinations:</p>
+                  <div className="space-y-2">
+                    {buildings.slice(0, 4).map(building => (
+                      <button 
+                        key={building.id}
+                        onClick={() => handleQuickDirection(building.name)}
+                        className="block w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm transition-colors button-interactive border border-gray-200"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <i className="material-icons text-gray-400">{getBuildingIcon(building)}</i>
+                          <span>{building.name}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Enhanced Building Component with Google Maps styling (removed show3D parameter)
+    const Building = ({ building, isSelected, isDestination, mapType, onClick }) => {
+      const [hovered, setHovered] = React.useState(false);
+      const [tooltipPosition, setTooltipPosition] = React.useState({ x: 0, y: 0 });
+      
+      const handleMouseEnter = (e) => {
+        setHovered(true);
+        setTooltipPosition({
+          x: e.clientX,
+          y: e.clientY - 30
+        });
+      };
+      
+      const getBuildingIcon = (building) => {
+        if (building.name.includes('Library')) return 'local_library';
+        if (building.name.includes('Admin')) return 'business';
+        if (building.name.includes('Auditorium')) return 'theater_comedy';
+        if (building.name.includes('Parking')) return 'local_parking';
+        if (building.name.includes('CNC') || building.name.includes('Lab')) return 'precision_manufacturing';
+        if (building.name.includes('Block')) return 'school';
+        return 'location_city';
+      };
+
+      const getBuildingColor = (building) => {
+        if (building.name.includes('Library')) return { primary: '#10b981', secondary: '#059669' };
+        if (building.name.includes('Admin')) return { primary: '#3b82f6', secondary: '#2563eb' };
+        if (building.name.includes('Auditorium')) return { primary: '#8b5cf6', secondary: '#7c3aed' };
+        if (building.name.includes('Parking')) return { primary: '#6b7280', secondary: '#4b5563' };
+        if (building.name.includes('CNC') || building.name.includes('Lab')) return { primary: '#f59e0b', secondary: '#d97706' };
+        if (building.name.includes('W')) return { primary: '#ef4444', secondary: '#dc2626' };
+        if (building.name.includes('E')) return { primary: '#06b6d4', secondary: '#0891b2' };
+        return { primary: '#6366f1', secondary: '#4f46e5' };
+      };
+      
+      const buildingColors = getBuildingColor(building);
+      const buildingIcon = getBuildingIcon(building);
+      
+      return (
+        <>
+          <div 
+            className={`absolute building-interactive building-shadow ${
+              isSelected || isDestination ? 'z-20' : 'z-10'
+            }`}
+            style={{
+              left: building.location.x - building.size * 0.75,
+              top: building.location.y - building.size * 0.75,
+              width: building.size * 1.5,
+              height: building.size * 1.5
+            }}
+            onClick={() => onClick(building)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={() => setHovered(false)}
+            onMouseMove={(e) => setTooltipPosition({ x: e.clientX, y: e.clientY - 30 })}
+            aria-label={building.name}
+            role="button"
+          >
+            {mapType === 'satellite' ? (
+              // Enhanced Satellite View
+              <div className="w-full h-full relative">
+                <div 
+                  className="w-full h-full rounded-lg border-2 relative overflow-hidden"
+                  style={{
+                    background: isSelected || isDestination ? 
+                      `linear-gradient(135deg, rgba(66, 133, 244, 0.9), #6B5F47)` :
+                      `linear-gradient(135deg, #6B5F47, #8B7F63)`,
+                    borderColor: isSelected || isDestination ? '#4285F4' : 'rgba(255,255,255,0.3)',
+                    boxShadow: `
+                      inset 2px 2px 4px rgba(255,255,255,0.2),
+                      inset -2px -2px 4px rgba(0,0,0,0.2),
+                      0 4px 8px rgba(0,0,0,0.3)
+                    `
+                  }}
+                >
+                  {building.name.includes('Parking') ? (
+                    <div className="absolute inset-1 grid grid-cols-6 gap-0.5 p-1">
+                      {[...Array(18)].map((_, i) => (
+                        <div key={i} className="bg-yellow-200 bg-opacity-50 h-full rounded-sm border border-yellow-300"></div>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="absolute inset-2 grid grid-cols-3 gap-1">
+                        {[...Array(6)].map((_, i) => (
+                          <div key={i} className="bg-blue-200 bg-opacity-40 rounded-sm border border-blue-300 border-opacity-30"></div>
+                        ))}
+                      </div>
+                      <div className="absolute top-1 left-1 w-2 h-2 bg-red-400 bg-opacity-60 rounded-sm"></div>
+                      <div className="absolute top-1 right-1 w-1 h-3 bg-gray-400 bg-opacity-80 rounded-sm"></div>
+                    </>
+                  )}
+                  
+                  {(isSelected || isDestination) && (
+                    <div className="absolute inset-0 bg-blue-400 bg-opacity-40 animate-pulse rounded-lg border-2 border-blue-500"></div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // Enhanced Google Maps Style View
+              <div className="w-full h-full relative">
+                {/* Building base with Google Maps styling */}
+                <div 
+                  className="w-full h-full relative rounded-xl overflow-hidden transition-all duration-300"
+                  style={{
+                    background: `linear-gradient(145deg, ${buildingColors.primary}, ${buildingColors.secondary})`,
+                    boxShadow: `
+                      0 8px 16px rgba(0,0,0,0.15),
+                      inset 0 1px 0 rgba(255,255,255,0.3),
+                      inset 0 -1px 0 rgba(0,0,0,0.1)
+                    `,
+                    border: `3px solid ${isSelected || isDestination ? '#4285F4' : 'rgba(255,255,255,0.4)'}`
+                  }}
+                >
+                  {/* Building icon with enhanced styling */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <i 
+                      className="material-icons text-white"
+                      style={{ 
+                        fontSize: building.name.includes('Parking') ? '18px' : '16px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                      }}
+                    >
+                      {buildingIcon}
+                    </i>
+                  </div>
+                  
+                  {/* Google Maps-style 3D effect */}
+                  <div 
+                    className="absolute -top-1 left-1 right-1 h-2 rounded-t-lg opacity-60"
+                    style={{
+                      background: `linear-gradient(45deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1))`,
+                      transform: 'perspective(20px) rotateX(45deg)'
+                    }}
+                  />
+                  
+                  <div 
+                    className="absolute -right-1 top-1 bottom-1 w-2 rounded-r-lg opacity-60"
+                    style={{
+                      background: `linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.3))`,
+                      transform: 'perspective(20px) rotateY(-45deg)'
+                    }}
+                  />
+                  
+                  {/* Building type indicator */}
+                  <div 
+                    className="absolute -top-2 -left-2 w-4 h-4 rounded-full border-2 border-white shadow-md"
+                    style={{
+                      backgroundColor: building.name.includes('Library') ? '#10b981' :
+                                     building.name.includes('Admin') ? '#3b82f6' :
+                                     building.name.includes('Auditorium') ? '#8b5cf6' :
+                                     building.name.includes('Parking') ? '#6b7280' :
+                                     building.name.includes('Lab') ? '#f59e0b' :
+                                     '#6366f1'
+                    }}
+                  />
+                  
+                  {/* Selection highlight */}
+                  {(isSelected || isDestination) && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400 to-purple-500 opacity-30 animate-pulse"></div>
+                  )}
+                  
+                  {/* Hover effect */}
+                  {hovered && (
+                    <div className="absolute inset-0 rounded-xl bg-white bg-opacity-20"></div>
+                  )}
+                </div>
+                
+                {/* Enhanced building label */}
+                <div 
+                  className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-95 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-800 shadow-lg whitespace-nowrap border border-gray-200"
+                  style={{
+                    fontSize: '10px',
+                    display: (hovered || isSelected || isDestination) ? 'block' : 'none'
+                  }}
+                >
+                  {building.name}
+                </div>
+              </div>
+            )}
+            
+            {/* Enhanced occupancy indicator */}
+            {building.occupancy && (
+              <div className="absolute -top-3 -right-3 flex items-center justify-center">
+                <div 
+                  className="w-5 h-5 rounded-full border-2 border-white shadow-lg flex items-center justify-center"
+                  style={{
+                    backgroundColor: building.occupancy > 80 ? '#ef4444' : 
+                                   building.occupancy > 50 ? '#eab308' : '#22c55e'
+                  }}
+                >
+                  <span className="text-white text-xs font-bold" style={{ fontSize: '8px' }}>
+                    {Math.round(building.occupancy / 20)}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {/* Destination marker */}
+            {isDestination && (
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <div className="w-8 h-8 bg-red-500 rounded-full border-3 border-white shadow-lg flex items-center justify-center animate-bounce route-marker">
+                  <i className="material-icons text-white text-lg">place</i>
+                </div>
+              </div>
+            )}
+            
+            {/* Selection indicator */}
+            {isSelected && (
+              <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
+                <div className="w-10 h-2 bg-blue-500 rounded-full animate-pulse shadow-md"></div>
+              </div>
+            )}
+          </div>
+          
+          {/* Enhanced Google-style tooltip */}
+          {hovered && (
+            <div 
+              className="tooltip-enhanced fade-in p-4 max-w-xs z-50"
+              style={{ 
+                position: 'fixed',
+                left: tooltipPosition.x - 150, 
+                top: tooltipPosition.y - 10,
+                pointerEvents: 'none'
+              }}
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div 
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md"
+                  style={{ backgroundColor: buildingColors.primary }}
+                >
+                  <i className="material-icons text-sm">{buildingIcon}</i>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-800">{building.name}</div>
+                  <div className="text-xs text-gray-600">{building.type}</div>
+                </div>
+              </div>
+              
+              {building.description && (
+                <div className="text-sm text-gray-700 mb-3">{building.description}</div>
+              )}
+              
+              <div className="space-y-2">
+                {building.occupancy && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">Current occupancy:</span>
+                    <span className={`font-medium px-2 py-1 rounded-full ${
+                      building.occupancy > 80 ? 'bg-red-100 text-red-700' : 
+                      building.occupancy > 50 ? 'bg-yellow-100 text-yellow-700' : 
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {building.occupancy}%
+                    </span>
+                  </div>
+                )}
+                
+                {building.rating && (
+                  <div className="flex items-center text-xs">
+                    <span className="text-yellow-500 mr-1">★</span>
+                    <span className="font-medium">{building.rating}</span>
+                    <span className="text-gray-500 ml-1">(Reviews)</span>
+                  </div>
+                )}
+                
+                {building.openHours && (
+                  <div className="text-xs text-gray-600 flex items-center">
+                    <i className="material-icons text-xs mr-1">schedule</i>
+                    {building.openHours}
+                  </div>
+                )}
+                
+                {building.facilities && (
+                  <div className="text-xs text-gray-600">
+                    <div className="font-medium mb-1">Facilities:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {building.facilities.slice(0, 3).map((facility, index) => (
+                        <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                          {facility}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      );
+    };
+
+    // Enhanced BuildingInfoPopup Component with QR Code
+    const BuildingInfoPopup = ({ building, onClose, onDirections, weather }) => {
+      const [showQR, setShowQR] = React.useState(false);
+      
+      const generateQRCode = () => {
+        const qrData = `SVSU Campus - ${building.name}`;
+        return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+      };
+      
+      const getBuildingIcon = (building) => {
+        if (building.name.includes('Library')) return 'local_library';
+        if (building.name.includes('Admin')) return 'business';
+        if (building.name.includes('Auditorium')) return 'theater_comedy';
+        if (building.name.includes('Parking')) return 'local_parking';
+        if (building.name.includes('CNC') || building.name.includes('Lab')) return 'precision_manufacturing';
+        if (building.name.includes('Block')) return 'school';
+        return 'location_city';
+      };
+
+      const getBuildingColor = (building) => {
+        if (building.name.includes('Library')) return { primary: '#10b981', secondary: '#059669' };
+        if (building.name.includes('Admin')) return { primary: '#3b82f6', secondary: '#2563eb' };
+        if (building.name.includes('Auditorium')) return { primary: '#8b5cf6', secondary: '#7c3aed' };
+        if (building.name.includes('Parking')) return { primary: '#6b7280', secondary: '#4b5563' };
+        if (building.name.includes('CNC') || building.name.includes('Lab')) return { primary: '#f59e0b', secondary: '#d97706' };
+        if (building.name.includes('W')) return { primary: '#ef4444', secondary: '#dc2626' };
+        if (building.name.includes('E')) return { primary: '#06b6d4', secondary: '#0891b2' };
+        return { primary: '#6366f1', secondary: '#4f46e5' };
+      };
+      
+      return (
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 building-detail-card rounded-xl shadow-2xl p-6 w-80 z-30 fade-in border border-gray-200">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex items-center space-x-3">
+              <div 
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md"
+                style={{ backgroundColor: getBuildingColor(building).primary }}
+              >
+                <i className="material-icons text-sm">{getBuildingIcon(building)}</i>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-gray-800">{building.name}</h3>
+                <p className="text-gray-500 text-sm">{building.type}</p>
+              </div>
+            </div>
+            <button 
+              className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 button-interactive"
+              onClick={onClose}
+              aria-label="Close info"
+            >
+              <i className="material-icons">close</i>
+            </button>
+          </div>
+          
+          {building.description && (
+            <p className="text-gray-700 text-sm mb-4 leading-relaxed">{building.description}</p>
+          )}
+          
+          {/* Enhanced building details */}
+          <div className="space-y-3 text-sm mb-4">
+            {building.rating && (
+              <div className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
+                <div className="flex items-center">
+                  <span className="text-yellow-500 mr-2">★</span>
+                  <span className="font-medium">{building.rating}</span>
+                </div>
+                <span className="text-gray-500">(124 reviews)</span>
+              </div>
+            )}
+            
+            {building.occupancy && (
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <span className="text-gray-600">Current occupancy:</span>
+                <span className={`font-medium px-3 py-1 rounded-full text-xs ${
+                  building.occupancy > 80 ? 'bg-red-100 text-red-700' : 
+                  building.occupancy > 50 ? 'bg-yellow-100 text-yellow-700' : 
+                  'bg-green-100 text-green-700'
+                }`}>
+                  {building.occupancy}%
+                </span>
+              </div>
+            )}
+            
+            {building.openHours && (
+              <div className="flex items-center p-2 bg-blue-50 rounded-lg">
+                <i className="material-icons text-blue-500 text-sm mr-2">schedule</i>
+                <span className="text-gray-700">{building.openHours}</span>
+              </div>
+            )}
+            
+            {building.facilities && (
+              <div className="p-2 bg-gray-50 rounded-lg">
+                <div className="text-gray-600 font-medium mb-2">Available facilities:</div>
+                <div className="flex flex-wrap gap-1">
+                  {building.facilities.map((facility, index) => (
+                    <span key={index} className="bg-white text-gray-700 px-2 py-1 rounded text-xs border border-gray-200">
+                      {facility}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {weather && (
+              <div className="p-2 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-xs text-blue-600 flex items-center">
+                  <i className="material-icons text-sm mr-1">wb_sunny</i>
+                  {weather.condition} • {weather.temperature}°C • Humidity {weather.humidity}%
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex space-x-3 mb-3">
+            <button 
+              className="flex-1 bg-blue-500 text-white py-3 px-4 rounded-lg text-sm font-medium flex items-center justify-center hover:bg-blue-600 transition-colors button-interactive shadow-md"
+              onClick={onDirections}
+              aria-label="Get directions"
+            >
+              <i className="material-icons text-sm mr-2">directions</i>
+              Get Directions
+            </button>
+            <button 
+              className="flex-1 border border-gray-300 text-blue-500 py-3 px-4 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors button-interactive"
+              onClick={() => setShowQR(!showQR)}
+              aria-label="Share location"
+            >
+              <i className="material-icons text-sm mr-2">qr_code</i>
+              Share
+            </button>
+          </div>
+          
+          {showQR && (
+            <div className="text-center border-t pt-4 qr-code-container">
+              <img src={generateQRCode()} alt="QR Code for location sharing" className="mx-auto mb-2 rounded" />
+              <p className="text-xs text-gray-500">Scan to share this location</p>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Enhanced Emergency Features Component
+    const EmergencyFeatures = ({ addNotification }) => {
+      const [showEmergency, setShowEmergency] = React.useState(false);
+      
+      const handleEmergencyCall = (type) => {
+        addNotification(`Emergency ${type} contacted`, "success");
+        setShowEmergency(false);
+      };
+      
+      return (
+        <>
+          <button 
+            onClick={() => setShowEmergency(!showEmergency)}
+            className="fixed bottom-4 right-4 w-14 h-14 bg-red-500 text-white rounded-full shadow-lg emergency-pulse hover:bg-red-600 transition-colors z-40 button-interactive"
+            aria-label="Emergency services"
+          >
+            <i className="material-icons">emergency</i>
+          </button>
+          
+          {showEmergency && (
+            <div className="fixed bottom-20 right-4 emergency-panel rounded-xl shadow-2xl p-6 w-72 z-40 slide-in-right">
+              <h3 className="font-bold text-white mb-4 flex items-center">
+                <i className="material-icons mr-2">emergency</i>
+                Emergency Services
+              </h3>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => handleEmergencyCall('Security')}
+                  className="w-full bg-white bg-opacity-20 text-white py-3 rounded-lg hover:bg-opacity-30 transition-colors button-interactive flex items-center justify-center backdrop-blur-sm"
+                >
+                  <i className="material-icons mr-2">security</i>
+                  Campus Security
+                </button>
+                <button 
+                  onClick={() => handleEmergencyCall('Medical')}
+                  className="w-full bg-white bg-opacity-20 text-white py-3 rounded-lg hover:bg-opacity-30 transition-colors button-interactive flex items-center justify-center backdrop-blur-sm"
+                >
+                  <i className="material-icons mr-2">local_hospital</i>
+                  Medical Emergency
+                </button>
+                <button 
+                  onClick={() => handleEmergencyCall('Fire')}
+                  className="w-full bg-white bg-opacity-20 text-white py-3 rounded-lg hover:bg-opacity-30 transition-colors button-interactive flex items-center justify-center backdrop-blur-sm"
+                >
+                  <i className="material-icons mr-2">local_fire_department</i>
+                  Fire Emergency
+                </button>
+                <button 
+                  onClick={() => setShowEmergency(false)}
+                  className="w-full bg-white bg-opacity-20 text-white py-3 rounded-lg hover:bg-opacity-30 transition-colors button-interactive backdrop-blur-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      );
+    };
+
+    // Enhanced Accessibility Panel Component
+    const AccessibilityPanel = ({ settings, toggleSetting }) => {
+      const [showPanel, setShowPanel] = React.useState(false);
+      
+      return (
+        <>
+          <button 
+            onClick={() => setShowPanel(!showPanel)}
+            className="fixed bottom-24 right-4 w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors z-40 button-interactive"
+            aria-label="Accessibility options"
+          >
+            <i className="material-icons">accessibility</i>
+          </button>
+          
+          {showPanel && (
+            <div className="fixed bottom-40 right-4 bg-white rounded-xl shadow-2xl p-6 w-72 z-40 slide-in-right border border-gray-200">
+              <h3 className="font-bold mb-4 flex items-center text-gray-800">
+                <i className="material-icons mr-2 text-blue-500">accessibility</i>
+                Accessibility Options
+              </h3>
+              <div className="space-y-4">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <span className="text-sm text-gray-700">High Contrast Mode</span>
+                  <input 
+                    type="checkbox" 
+                    checked={settings.highContrast}
+                    onChange={() => toggleSetting('highContrast')}
+                    className="rounded text-blue-500"
+                  />
+                </label>
+                <label className="flex items-center justify-between cursor-pointer">
+                  <span className="text-sm text-gray-700">Large Text</span>
+                  <input 
+                    type="checkbox" 
+                    checked={settings.largeText}
+                    onChange={() => toggleSetting('largeText')}
+                    className="rounded text-blue-500"
+                  />
+                </label>
+                <label className="flex items-center justify-between cursor-pointer">
+                  <span className="text-sm text-gray-700">Voice Announcements</span>
+                  <input 
+                    type="checkbox" 
+                    checked={settings.voiceAnnouncements}
+                    onChange={() => toggleSetting('voiceAnnouncements')}
+                    className="rounded text-blue-500"
+                  />
+                </label>
+                <label className="flex items-center justify-between cursor-pointer">
+                  <span className="text-sm text-gray-700">Reduced Motion</span>
+                  <input 
+                    type="checkbox" 
+                    checked={settings.reducedMotion}
+                    onChange={() => toggleSetting('reducedMotion')}
+                    className="rounded text-blue-500"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+        </>
+      );
+    };
+
+    // Helper functions for building styling
+    const getBuildingIcon = (building) => {
+      if (building.name.includes('Library')) return 'local_library';
+      if (building.name.includes('Admin')) return 'business';
+      if (building.name.includes('Auditorium')) return 'theater_comedy';
+      if (building.name.includes('Parking')) return 'local_parking';
+      if (building.name.includes('CNC') || building.name.includes('Lab')) return 'precision_manufacturing';
+      if (building.name.includes('Block')) return 'school';
+      return 'location_city';
+    };
+
+    const getBuildingColor = (building) => {
+      if (building.name.includes('Library')) return { primary: '#10b981', secondary: '#059669' };
+      if (building.name.includes('Admin')) return { primary: '#3b82f6', secondary: '#2563eb' };
+      if (building.name.includes('Auditorium')) return { primary: '#8b5cf6', secondary: '#7c3aed' };
+      if (building.name.includes('Parking')) return { primary: '#6b7280', secondary: '#4b5563' };
+      if (building.name.includes('CNC') || building.name.includes('Lab')) return { primary: '#f59e0b', secondary: '#d97706' };
+      if (building.name.includes('W')) return { primary: '#ef4444', secondary: '#dc2626' };
+      if (building.name.includes('E')) return { primary: '#06b6d4', secondary: '#0891b2' };
+      return { primary: '#6366f1', secondary: '#4f46e5' };
+    };
+
+    // Main Application Component
+    const SVSUGoogleMapsClone = () => {
+      const [splashScreen, setSplashScreen] = React.useState(true);
+      const [selectedBuilding, setSelectedBuilding] = React.useState(null);
+      const [searchTerm, setSearchTerm] = React.useState('');
+      const [searchResults, setSearchResults] = React.useState([]);
+      const [showDirections, setShowDirections] = React.useState(false);
+      const [startPoint, setStartPoint] = React.useState('Main Entry');
+      const [endPoint, setEndPoint] = React.useState('');
+      const [mapType, setMapType] = React.useState('map');
+      const [isLoading, setIsLoading] = React.useState(false);
+      const [showMyLocation, setShowMyLocation] = React.useState(false);
+      const [zoom, setZoom] = React.useState(1);
+      
+      // NEW ADVANCED FEATURES (removed 3D)
+      const [transportMode, setTransportMode] = React.useState('walking');
+      const [isNavigating, setIsNavigating] = React.useState(false);
+      const [currentStep, setCurrentStep] = React.useState(-1);
+      const [routeOptions, setRouteOptions] = React.useState('fastest');
+      const [accessibilitySettings, setAccessibilitySettings] = React.useState({
+        highContrast: false,
+        largeText: false,
+        voiceAnnouncements: false,
+        reducedMotion: false
+      });
+      
+      // Enhanced hooks
+      const { location, error, loading, getCurrentLocation } = useGeolocation();
+      const { notifications, addNotification, removeNotification } = useNotification();
+      const { isVoiceEnabled, voiceSupported, speak, toggleVoice } = useVoiceNavigation();
+      const weather = useWeather();
+      
+      const toggleSetting = (setting) => {
+        setAccessibilitySettings(prev => ({
+          ...prev,
+          [setting]: !prev[setting]
+        }));
+      };
+      
+      // Hide splash screen after delay
+      React.useEffect(() => {
+        const timer = setTimeout(() => {
+          setSplashScreen(false);
+          addNotification("Welcome to SVSU Dudhola Navigation System!", "success", 4000);
+        }, 3500);
+        
+        return () => clearTimeout(timer);
+      }, []);
+
+      // Debounce search term
+      const debouncedSearchTerm = useDebounce(searchTerm, 300);
+      
+      // Enhanced buildings data with comprehensive information
+      const buildings = [
+        { 
+          id: 1, 
+          name: 'Admin Block',
+          type: 'Administrative Building',
+          description: 'Main administrative hub with student services, admissions, and academic offices',
+          location: {x: 216, y: 180},
+          size: 24,
+          rating: 4.2,
+          occupancy: 65,
+          facilities: ['Reception', 'Student Services', 'WiFi', 'AC', 'Waiting Area'],
+          openHours: '8:00 AM - 6:00 PM'
+        },
+        { 
+          id: 2, 
+          name: 'Library',
+          type: 'Academic Library',
+          description: 'Modern library with extensive digital resources, study spaces, and research facilities',
+          location: {x: 433, y: 385},
+          size: 26,
+          rating: 4.5,
+          occupancy: 80,
+          facilities: ['Books', 'Computers', 'Study Rooms', 'WiFi', 'Printing', 'Silent Zone'],
+          openHours: '7:00 AM - 10:00 PM'
+        },
+        { 
+          id: 3, 
+          name: 'Auditorium',
+          type: 'Event Venue',
+          description: 'State-of-the-art auditorium for conferences, seminars, and cultural events',
+          location: {x: 630, y: 160},
+          size: 28,
+          rating: 4.3,
+          occupancy: 30,
+          facilities: ['Stage', 'Sound System', 'Projector', 'AC', 'Green Room', 'Backstage'],
+          openHours: '9:00 AM - 9:00 PM'
+        },
+        { 
+          id: 4, 
+          name: '1W Block',
+          type: 'Academic Building',
+          description: 'West academic block featuring engineering departments and laboratories',
+          location: {x: 216, y: 265},
+          size: 24,
+          rating: 4.0,
+          occupancy: 55,
+          facilities: ['Classrooms', 'Engineering Labs', 'WiFi', 'Cafeteria', 'Study Areas'],
+          openHours: '7:00 AM - 7:00 PM'
+        },
+        { 
+          id: 5, 
+          name: '2W Block',
+          type: 'Academic Building',
+          description: 'Arts and humanities departments with creative studios and galleries',
+          location: {x: 216, y: 385},
+          size: 24,
+          rating: 4.1,
+          occupancy: 70,
+          facilities: ['Art studios', 'Classrooms', 'WiFi', 'Printing', 'Gallery'],
+          openHours: '7:00 AM - 8:00 PM'
+        },
+        { 
+          id: 6, 
+          name: '3W Block',
+          type: 'Academic Building',
+          description: 'Management and business studies with seminar halls and case study rooms',
+          location: {x: 216, y: 505},
+          size: 24,
+          rating: 4.0,
+          occupancy: 45,
+          facilities: ['Classrooms', 'Seminar Halls', 'WiFi', 'AC', 'Business Lab'],
+          openHours: '8:00 AM - 6:00 PM'
+        },
+        { 
+          id: 7, 
+          name: '1E Block',
+          type: 'Academic Building',
+          description: 'East academic block featuring engineering departments and laboratories',
+          location: {x: 650, y: 265},
+          size: 24,
+          rating: 4.1,
+          occupancy: 60,
+          facilities: ['Computer Labs', 'Classrooms', 'Research Equipment', 'Safety Systems'],
+          openHours: '7:00 AM - 7:00 PM'
+        },
+        { 
+          id: 8, 
+          name: '2E Block',
+          type: 'Academic Building',
+          description: 'Computer Science and IT departments with modern computing facilities',
+          location: {x: 650, y: 385},
+          size: 24,
+          rating: 4.1,
+          occupancy: 40,
+          facilities: ['Computer labs', 'Classrooms', 'Server room', 'Storage', 'Exhibition Space'],
+          openHours: '8:00 AM - 6:00 PM'
+        },
+        { 
+          id: 9, 
+          name: '3E Block',
+          type: 'Research Facility',
+          description: 'Advanced research facilities with specialized laboratories and equipment',
+          location: {x: 650, y: 505},
+          size: 24,
+          rating: 4.2,
+          occupancy: 35,
+          facilities: ['Research Labs', 'Meeting Rooms', 'Advanced Equipment', 'Security Access'],
+          openHours: '7:00 AM - 9:00 PM'
+        },
+        { 
+          id: 10, 
+          name: 'CNC Labs',
+          type: 'Technical Laboratory',
+          description: 'Computer Numerical Control laboratory with precision machinery and training facilities',
+          location: {x: 433, y: 515},
+          size: 26,
+          rating: 4.4,
+          occupancy: 25,
+          facilities: ['CNC Machines', 'Safety Equipment', 'Training Area', 'Tool Storage'],
+          openHours: '8:00 AM - 5:00 PM'
+        },
+        { 
+          id: 11, 
+          name: 'Parking Area',
+          type: 'Vehicle Parking',
+          description: 'Main campus parking facility with 200+ spaces and EV charging stations',
+          location: {x: 433, y: 100},
+          size: 32,
+          rating: 3.8,
+          occupancy: 75,
+          facilities: ['Car Parking', 'Bike Parking', 'Security', 'EV Charging', 'CCTV'],
+          openHours: '24/7'
+        }
+      ];
+
+      // Enhanced entry points
+      const entryPoints = [
+        { id: 'main', name: 'Main Entry', location: {x: 433, y: 580}, description: 'Primary campus entrance' },
+        { id: 'north', name: 'North Entry', location: {x: 433, y: 50}, description: 'Northern gate entrance' },
+        { id: 'east', name: 'East Entry', location: {x: 820, y: 325}, description: 'Eastern side entrance' },
+        { id: 'west', name: 'West Entry', location: {x: 80, y: 325}, description: 'Western side entrance' }
+      ];
+
+      // Enhanced search functionality
+      React.useEffect(() => {
+        if (debouncedSearchTerm) {
+          const results = buildings.filter(building => 
+            building.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            building.type.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            (building.description && building.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
+            (building.facilities && building.facilities.some(f => f.toLowerCase().includes(debouncedSearchTerm.toLowerCase())))
+          );
+          setSearchResults(results);
+        } else {
+          setSearchResults([]);
+        }
+      }, [debouncedSearchTerm, buildings]);
+
+      // Enhanced pathfinding network for accurate SVSU campus routes
+      const pathNodes = [
+        // Entry points
+        { id: 'entry_main', x: 433, y: 580 },
+        { id: 'entry_north', x: 433, y: 100 },
+        { id: 'entry_east', x: 820, y: 325 },
+        { id: 'entry_west', x: 80, y: 325 },
+        
+        // Main intersection points
+        { id: 'center', x: 433, y: 325 },
+        { id: 'north_center', x: 433, y: 200 },
+        { id: 'south_center', x: 433, y: 450 },
+        { id: 'west_center', x: 216, y: 325 },
+        { id: 'east_center', x: 650, y: 325 },
+        
+        // Building connection points
+        { id: 'admin_point', x: 216, y: 180 },
+        { id: 'library_point', x: 433, y: 385 },
+        { id: 'auditorium_point', x: 650, y: 160 },
+        { id: 'parking_point', x: 433, y: 120 },
+        { id: 'cnc_point', x: 433, y: 515 },
+        
+        // West building cluster
+        { id: 'west_1w', x: 216, y: 265 },
+        { id: 'west_2w', x: 216, y: 385 },
+        { id: 'west_3w', x: 216, y: 505 },
+        
+        // East building cluster
+        { id: 'east_1e', x: 650, y: 265 },
+        { id: 'east_2e', x: 650, y: 385 },
+        { id: 'east_3e', x: 650, y: 505 },
+        
+        // Intermediate navigation points
+        { id: 'junction_nw', x: 325, y: 200 },
+        { id: 'junction_ne', x: 541, y: 200 },
+        { id: 'junction_sw', x: 325, y: 450 },
+        { id: 'junction_se', x: 541, y: 450 }
+      ];
+      
+      // Enhanced path segments with realistic connections
+      const pathSegments = [
+        // Entry connections
+        { from: 'entry_main', to: 'south_center', weight: 1.0 },
+        { from: 'entry_north', to: 'parking_point', weight: 1.0 },
+        { from: 'entry_east', to: 'east_center', weight: 1.0 },
+        { from: 'entry_west', to: 'west_center', weight: 1.0 },
+        
+        // Main road network
+        { from: 'center', to: 'north_center', weight: 1.0 },
+        { from: 'center', to: 'south_center', weight: 1.0 },
+        { from: 'center', to: 'west_center', weight: 1.0 },
+        { from: 'center', to: 'east_center', weight: 1.0 },
+        
+        // Building connections
+        { from: 'north_center', to: 'admin_point', weight: 1.2 },
+        { from: 'north_center', to: 'auditorium_point', weight: 1.2 },
+        { from: 'north_center', to: 'parking_point', weight: 0.8 },
+        
+        { from: 'library_point', to: 'center', weight: 1.0 },
+        { from: 'cnc_point', to: 'south_center', weight: 0.8 },
+        
+        // West building network
+        { from: 'west_center', to: 'admin_point', weight: 1.0 },
+        { from: 'west_center', to: 'west_1w', weight: 0.8 },
+        { from: 'west_1w', to: 'west_2w', weight: 0.8 },
+        { from: 'west_2w', to: 'west_3w', weight: 0.8 },
+        
+        // East building network
+        { from: 'east_center', to: 'auditorium_point', weight: 1.0 },
+        { from: 'east_center', to: 'east_1e', weight: 0.8 },
+        { from: 'east_1e', to: 'east_2e', weight: 0.8 },
+        { from: 'east_2e', to: 'east_3e', weight: 0.8 },
+        
+        // Cross connections for alternative routes
+        { from: 'junction_nw', to: 'north_center', weight: 1.1 },
+        { from: 'junction_nw', to: 'admin_point', weight: 0.9 },
+        { from: 'junction_ne', to: 'north_center', weight: 1.1 },
+        { from: 'junction_ne', to: 'auditorium_point', weight: 0.9 },
+        { from: 'junction_sw', to: 'south_center', weight: 1.1 },
+        { from: 'junction_sw', to: 'west_3w', weight: 0.9 },
+        { from: 'junction_se', to: 'south_center', weight: 1.1 },
+        { from: 'junction_se', to: 'east_3e', weight: 0.9 }
+      ];
+      
+      // Build enhanced path graph
+      const pathGraph = {};
+      pathNodes.forEach(node => {
+        pathGraph[node.id] = {};
+      });
+      
+      pathSegments.forEach(segment => {
+        const fromNode = pathNodes.find(node => node.id === segment.from);
+        const toNode = pathNodes.find(node => node.id === segment.to);
+        
+        if (fromNode && toNode) {
+          const distance = Math.sqrt(
+            Math.pow(toNode.x - fromNode.x, 2) + 
+            Math.pow(toNode.y - fromNode.y, 2)
+          ) * segment.weight;
+          
+          pathGraph[segment.from][segment.to] = distance;
+          pathGraph[segment.to][segment.from] = distance;
+        }
+      });
+      
+      // Enhanced pathfinding with Dijkstra's algorithm
+      const findOptimalPath = (startNode, endNode) => {
+        const distances = {};
+        const previous = {};
+        const unvisited = new Set();
+        
+        pathNodes.forEach(node => {
+          distances[node.id] = Infinity;
+          previous[node.id] = null;
+          unvisited.add(node.id);
+        });
+        
+        distances[startNode] = 0;
+        
+        while (unvisited.size > 0) {
+          let minDistance = Infinity;
+          let current = null;
+          
+          unvisited.forEach(nodeId => {
+            if (distances[nodeId] < minDistance) {
+              minDistance = distances[nodeId];
+              current = nodeId;
+            }
+          });
+          
+          if (current === null || current === endNode) break;
+          
+          unvisited.delete(current);
+          
+          for (const neighbor in pathGraph[current]) {
+            if (unvisited.has(neighbor)) {
+              let newDistance = distances[current] + pathGraph[current][neighbor];
+              
+              // Apply route preferences
+              if (routeOptions === 'scenic') {
+                if (neighbor.includes('junction') || neighbor.includes('pedestrian')) {
+                  newDistance *= 0.9; // Prefer scenic routes
+                }
+              } else if (routeOptions === 'fastest') {
+                if (['center', 'north_center', 'south_center', 'east_center', 'west_center'].includes(neighbor)) {
+                  newDistance *= 0.8; // Prefer main roads
+                }
+              }
+              
+              if (newDistance < distances[neighbor]) {
+                distances[neighbor] = newDistance;
+                previous[neighbor] = current;
+              }
+            }
+          }
+        }
+        
+        // Reconstruct path
+        const path = [];
+        let current = endNode;
+        
+        while (current !== null) {
+          const node = pathNodes.find(node => node.id === current);
+          if (node) path.unshift({ x: node.x, y: node.y, id: current });
+          current = previous[current];
+        }
+        
+        return path;
+      };
+      
+      // Calculate distance between two points
+      const calculateDistance = (p1, p2) => {
+        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+      };
+      
+      // Convert pixel distance to meters (enhanced scale)
+      const pixelsToMeters = (pixels) => {
+        return Math.round(pixels * 1.2); // More realistic campus scale
+      };
+      
+      // Find nearest path node to a location
+      const findNearestPathNode = (location) => {
+        let minDistance = Infinity;
+        let nearestNode = null;
+        
+        pathNodes.forEach(node => {
+          const distance = calculateDistance(location, node);
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestNode = node;
+          }
+        });
+        
+        return nearestNode ? nearestNode.id : null;
+      };
+
+      // Enhanced route calculation with accurate pathfinding
+      const getRoute = (start, end) => {
+        const findByName = (name) => {
+          if (name === 'My Location') {
+            if (location && location.mapX && location.mapY) {
+              return { 
+                location: { x: location.mapX, y: location.mapY }, 
+                name: location.isFallback ? 
+                  `My Location (${location.fallbackDesc})` : 
+                  location.isOnCampus ? 
+                    'My Location (On Campus)' : 
+                    'My Location (Off Campus)'
+              };
+            } else {
+              return { 
+                location: { x: 433, y: 580 }, 
+                name: 'My Location (Main Gate - Default)' 
+              };
+            }
+          }
+          return buildings.find(b => b.name === name) || entryPoints.find(e => e.name === name);
+        };
+        
+        const startPoint = findByName(start);
+        const endPoint = findByName(end);
+        
+        if (!startPoint || !endPoint) return null;
+        
+        const startNodeId = findNearestPathNode(startPoint.location);
+        const endNodeId = findNearestPathNode(endPoint.location);
+        
+        if (!startNodeId || !endNodeId) return null;
+        
+        const networkPath = findOptimalPath(startNodeId, endNodeId);
+        const path = [startPoint.location, ...networkPath.map(p => ({x: p.x, y: p.y})), endPoint.location];
+        
+        let totalDistance = 0;
+        for (let i = 0; i < path.length - 1; i++) {
+          totalDistance += calculateDistance(path[i], path[i + 1]);
+        }
+        
+        const distanceInMeters = pixelsToMeters(totalDistance);
+        
+        // Enhanced time calculation based on transport mode
+        let speedMetersPerSecond;
+        switch(transportMode) {
+          case 'walking': speedMetersPerSecond = 1.4; break;
+          case 'cycling': speedMetersPerSecond = 4.2; break;
+          default: speedMetersPerSecond = 8.3; // driving
+        }
+        
+        const timeInSeconds = Math.round(distanceInMeters / speedMetersPerSecond);
+        const minutes = Math.floor(timeInSeconds / 60);
+        const seconds = timeInSeconds % 60;
+        
+        // Generate enhanced turn-by-turn directions
+        const directions = [];
+        
+        directions.push({
+          instruction: `Start ${transportMode === 'walking' ? 'walking' : transportMode === 'cycling' ? 'cycling' : 'driving'} from ${start}`,
+          distance: 0,
+          point: path[0],
+          landmarks: start === 'My Location' ? 'Your current location' : `${start} entrance`,
+          type: 'start'
+        });
+        
+        // Generate intermediate directions
+        for (let i = 1; i < path.length - 1; i++) {
+          const currentPoint = path[i - 1];
+          const nextPoint = path[i];
+          const nextNextPoint = path[i + 1];
+          
+          if (!nextNextPoint) continue;
+          
+          const segmentDistance = calculateDistance(currentPoint, nextPoint);
+          const segmentDistanceMeters = pixelsToMeters(segmentDistance);
+          
+          // Calculate turn angle
+          const v1 = { x: nextPoint.x - currentPoint.x, y: nextPoint.y - currentPoint.y };
+          const v2 = { x: nextNextPoint.x - nextPoint.x, y: nextNextPoint.y - nextPoint.y };
+          
+          const dot = v1.x * v2.x + v1.y * v2.y;
+          const det = v1.x * v2.y - v1.y * v2.x;
+          const angle = Math.atan2(det, dot) * 180 / Math.PI;
+          
+          let instruction;
+          let type = 'continue';
+          
+          if (Math.abs(angle) < 10) {
+            instruction = 'Continue straight';
+          } else if (angle > 10) {
+            if (angle > 60) {
+              instruction = "Turn left";
+              type = 'turn-left';
+            } else {
+              instruction = "Turn slightly left";
+              type = 'turn-slight-left';
+            }
+          } else {
+            if (angle < -60) {
+              instruction = "Turn right";
+              type = 'turn-right';
+            } else {
+              instruction = "Turn slightly right";
+              type = 'turn-slight-right';
+            }
+          }
+          
+          // Add contextual landmarks
+          let landmark = '';
+          const nodeId = networkPath.find(n => n.x === nextPoint.x && n.y === nextPoint.y)?.id;
+          
+          if (nodeId) {
+            if (nodeId.includes('center')) landmark = 'at the main campus intersection';
+            else if (nodeId.includes('west')) landmark = 'towards the west academic buildings';
+            else if (nodeId.includes('east')) landmark = 'towards the east academic buildings';
+            else if (nodeId.includes('parking')) landmark = 'near the parking area';
+            else if (nodeId.includes('library')) landmark = 'towards the library';
+            else if (nodeId.includes('admin')) landmark = 'towards the admin block';
+          }
+          
+          if (segmentDistanceMeters > 10) { // Only add significant segments
+            directions.push({
+              instruction: instruction,
+              distance: segmentDistanceMeters,
+              point: nextPoint,
+              landmarks: landmark,
+              type: type
+            });
+          }
+        }
+        
+        directions.push({
+          instruction: `Arrive at ${end}`,
+          distance: pixelsToMeters(calculateDistance(path[path.length - 2], path[path.length - 1])),
+          point: path[path.length - 1],
+          landmarks: `${end} main entrance`,
+          type: 'destination'
+        });
+        
+        // Add weather considerations
+        let weatherWarning = null;
+        if (weather.condition === 'rainy' && transportMode === 'walking') {
+          weatherWarning = 'Rainy weather - consider covered walkways or indoor routes';
+        } else if (weather.condition === 'windy' && transportMode === 'cycling') {
+          weatherWarning = 'Windy conditions - cycle with caution';
+        } else if (weather.temperature > 35 && transportMode === 'walking') {
+          weatherWarning = 'High temperature - stay hydrated and seek shade';
+        }
+        
+        return {
+          transportMode,
+          startPoint,
+          endPoint: findByName(end),
+          path,
+          distanceInMeters,
+          time: `${minutes} min${seconds > 0 ? ` ${seconds} sec` : ''}`,
+          directions,
+          weatherWarning,
+          routeType: routeOptions
+        };
+      };
+
+      // Handle building selection
+      const handleBuildingClick = (building) => {
+        setSelectedBuilding(building);
+        setEndPoint(building.name);
+        speak(`Selected ${building.name}`);
+        addNotification(`Selected ${building.name}`, "info");
+      };
+
+      // Handle quick direction
+      const handleQuickDirection = () => {
+        if (!location || !showMyLocation) {
+          addNotification("Please enable location first", "warning");
+          getCurrentLocation();
+          return;
+        }
+        
+        let minDistance = Infinity;
+        let nearestBuilding = null;
+        
+        buildings.forEach(building => {
+          const distance = Math.sqrt(
+            Math.pow(building.location.x - location.mapX, 2) + 
+            Math.pow(building.location.y - location.mapY, 2)
+          );
+          
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestBuilding = building;
+          }
+        });
+        
+        if (nearestBuilding) {
+          setEndPoint(nearestBuilding.name);
+          setStartPoint('My Location');
+          setShowDirections(true);
+          speak(`Getting directions to nearest building: ${nearestBuilding.name}`);
+          addNotification(`Directions to ${nearestBuilding.name}`, "success");
+        }
+      };
+
+      // Reset functionality
+      const handleReset = () => {
+        setSelectedBuilding(null);
+        setSearchTerm('');
+        setSearchResults([]);
+        setShowDirections(false);
+        setEndPoint('');
+        setIsNavigating(false);
+        setCurrentStep(-1);
+        addNotification("Map reset", "info");
+      };
+
+      // Enhanced My Location functionality
+      const handleMyLocationClick = () => {
+        if (!showMyLocation) {
+          getCurrentLocation();
+          setShowMyLocation(true);
+          setStartPoint('My Location');
+          addNotification("Location enabled", "success");
+        } else {
+          setShowMyLocation(false);
+          if (startPoint === 'My Location') {
+            setStartPoint('Main Entry');
+          }
+          addNotification("Location disabled", "info");
+        }
+      };
+
+      // Map type change with satellite link
+      const handleMapTypeChange = (type) => {
+        if (type === 'satellite') {
+          // Open Google Maps satellite view of SVSU in a new tab
+          window.open('https://maps.app.goo.gl/CkN9W2BB5dRXPJNE8', '_blank');
+          addNotification("Opening Google Maps satellite view of SVSU", "info");
+        } else {
+          setMapType(type);
+          addNotification(`Switched to ${type} view`, "info");
+        }
+      };
+      
+      // Get current route
+      const currentRoute = startPoint && endPoint ? getRoute(startPoint, endPoint) : null;
+      
+      // Apply accessibility settings
+      const mapClassName = `
+        ${accessibilitySettings.highContrast ? 'high-contrast' : ''}
+        ${accessibilitySettings.largeText ? 'large-text' : ''}
+        ${accessibilitySettings.reducedMotion ? 'reduce-motion' : ''}
+      `;
+
+      // Enhanced splash screen with SVSU branding
+      if (splashScreen) {
+        return (
+          <div className="splash-enhanced flex flex-col items-center justify-center h-screen relative overflow-hidden">
+            {/* Animated background elements */}
+            <div className="absolute inset-0 overflow-hidden">
+              {[...Array(20)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full opacity-10"
+                  style={{
+                    width: Math.random() * 100 + 50,
+                    height: Math.random() * 100 + 50,
+                    left: Math.random() * 100 + '%',
+                    top: Math.random() * 100 + '%',
+                    background: i % 2 === 0 ? '#f7931e' : '#3b4995',
+                    animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
+                    animationDelay: `${Math.random() * 2}s`
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Main content */}
+            <div className="relative z-10 flex flex-col items-center">
+              {/* Enhanced SVSU Logo */}
+              <div className="mb-8 relative">
+                <SVSULogo size={160} />
+                
+                {/* Pulsing rings around logo */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-48 h-48 border-2 border-orange-400 border-opacity-30 rounded-full animate-ping"></div>
+                  <div className="absolute w-56 h-56 border-2 border-blue-400 border-opacity-20 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+                </div>
+              </div>
+              
+              {/* Welcome text with enhanced styling */}
+              <div className="text-center mb-6">
+                <h1 className="text-5xl font-bold text-white mb-4 welcome-glow">
+                  Welcome to SVSU Dudhola
+                </h1>
+                <p className="text-blue-100 text-2xl mb-3 font-medium">
+                  Shri Vishwakarma Skill University
+                </p>
+                <p className="text-orange-200 text-xl mb-4">
+                  Enhanced Campus Navigation System
+                </p>
+                
+                {/* University motto */}
+                <div className="motto-slide">
+                  <p className="text-blue-200 text-lg italic font-medium mb-2">
+                    "Excellence in Skill Development"
+                  </p>
+                  <p className="text-orange-300 text-sm">
+                    कौशल विकास में उत्कृष्टता
+                  </p>
+                </div>
+              </div>
+              
+              {/* Enhanced skill badges */}
+              <div className="flex flex-wrap justify-center gap-4 mb-8">
+                {[
+                  { icon: '🎓', text: 'Academic Excellence' },
+                  { icon: '🔧', text: 'Technical Skills' },
+                  { icon: '💼', text: 'Industry Ready' },
+                  { icon: '🌟', text: 'Innovation Hub' }
+                ].map((badge, index) => (
+                  <div 
+                    key={index}
+                    className="skill-badge px-4 py-2 rounded-full text-white text-sm font-medium fade-in"
+                    style={{ animationDelay: `${2 + index * 0.2}s` }}
+                  >
+                    <span className="mr-2">{badge.icon}</span>
+                    {badge.text}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Enhanced loading animation */}
+              <div className="flex items-center space-x-4">
+                <div className="flex space-x-2">
+                  <div className="w-4 h-4 bg-orange-400 rounded-full animate-bounce"></div>
+                  <div className="w-4 h-4 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  <div className="w-4 h-4 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+                </div>
+              </div>
+              
+              <div className="mt-6 text-blue-200 text-lg font-medium">
+                Loading enhanced navigation features...
+              </div>
+              
+              {/* University stats */}
+              <div className="mt-8 grid grid-cols-3 gap-8 text-center">
+                <div className="fade-in" style={{animationDelay: '2.5s'}}>
+                  <div className="text-2xl font-bold text-orange-400">10+</div>
+                  <div className="text-blue-200 text-sm">Departments</div>
+                </div>
+                <div className="fade-in" style={{animationDelay: '2.7s'}}>
+                  <div className="text-2xl font-bold text-orange-400">5000+</div>
+                  <div className="text-blue-200 text-sm">Students</div>
+                </div>
+                <div className="fade-in" style={{animationDelay: '2.9s'}}>
+                  <div className="text-2xl font-bold text-orange-400">50+</div>
+                  <div className="text-blue-200 text-sm">Courses</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Bottom branding */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center">
+              <div className="text-blue-300 text-sm mb-2">
+                Powered by Advanced Navigation Technology
+              </div>
+              <div className="text-orange-300 text-xs">
+                © 2024 Shri Vishwakarma Skill University, Dudhola
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      return (
+        <MapContext.Provider value={{ buildings, mapType }}>
+          <div className={`flex flex-col h-screen max-h-screen bg-gray-50 ${mapClassName}`}>
+            {/* Enhanced Notifications */}
+            <NotificationToast 
+              notifications={notifications} 
+              removeNotification={removeNotification} 
+            />
+            
+            {/* Google Maps-style Top Search Bar with SVSU Branding */}
+            <div className="bg-white shadow-lg p-3 flex items-center space-x-3 z-30 border-b border-gray-200">
+              {/* SVSU Logo in header */}
+              <div className="flex items-center space-x-3 mr-4">
+                <SVSULogo size={40} />
+                <div className="hidden md:block">
+                  <div className="text-sm font-bold text-gray-800">SVSU Dudhola</div>
+                  <div className="text-xs text-gray-600">Navigation System</div>
+                </div>
+              </div>
+              
+              <div className="flex-1 flex items-center">
+                <SearchBox 
+                  searchTerm={searchTerm} 
+                  setSearchTerm={setSearchTerm}
+                  showDirections={showDirections}
+                  setShowDirections={setShowDirections}
+                  endPoint={endPoint}
+                  onQuickDirection={handleQuickDirection}
+                  voiceSupported={voiceSupported}
+                  isVoiceEnabled={isVoiceEnabled}
+                  toggleVoice={toggleVoice}
+                />
+              </div>
+              
+              {!showDirections && (
+                <button 
+                  className="bg-blue-500 text-white shadow-lg p-3 rounded-full hover:bg-blue-600 button-interactive"
+                  onClick={() => setShowDirections(true)}
+                  aria-label="Get directions"
+                >
+                  <i className="material-icons">directions</i>
+                </button>
+              )}
+              
+              <button 
+                className="bg-gray-100 text-gray-700 shadow-md p-3 rounded-full hover:bg-gray-200 button-interactive"
+                onClick={handleReset}
+                aria-label="Reset map"
+              >
+                <i className="material-icons">refresh</i>
+              </button>
+            </div>
+            
+            {/* Main Content */}
+            <div className="flex flex-1 overflow-hidden relative">
+              {/* Enhanced Directions Side Panel */}
+              {showDirections && (
+                <DirectionsPanel 
+                  currentRoute={currentRoute}
+                  startPoint={startPoint}
+                  endPoint={endPoint}
+                  setStartPoint={setStartPoint}
+                  setEndPoint={setEndPoint}
+                  buildings={buildings}
+                  entryPoints={entryPoints}
+                  handleReset={handleReset}
+                  transportMode={transportMode}
+                  setTransportMode={setTransportMode}
+                  isNavigating={isNavigating}
+                  setIsNavigating={setIsNavigating}
+                  currentStep={currentStep}
+                  setCurrentStep={setCurrentStep}
+                  location={location}
+                  showMyLocation={showMyLocation}
+                  speak={speak}
+                  addNotification={addNotification}
+                  routeOptions={routeOptions}
+                  setRouteOptions={setRouteOptions}
+                />
+              )}
+
+              {/* Enhanced Main Map Area */}
+              <div className="flex-1 relative overflow-hidden">
+                {/* Weather Widget */}
+                <div className="absolute top-4 left-4 bg-white bg-opacity-95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-gray-200 status-indicator">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-3xl">
+                      {weather.condition === 'sunny' ? '☀️' : 
+                       weather.condition === 'cloudy' ? '☁️' : 
+                       weather.condition === 'rainy' ? '🌧️' : '💨'}
+                    </span>
+                    <div>
+                      <div className="font-bold text-lg text-gray-800">{weather.temperature}°C</div>
+                      <div className="text-sm text-gray-600 capitalize">{weather.condition}</div>
+                      <div className="text-xs text-gray-500">Humidity: {weather.humidity}%</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Google Maps-style Map Canvas */}
+                <div 
+                  className={`absolute inset-0 transition-all duration-500 ${
+                    mapType === 'satellite' ? 'satellite-enhanced' : 'google-maps-base'
+                  }`}
+                  style={{
+                    transform: `scale(${zoom})`,
+                    transformOrigin: 'center'
+                  }}
+                >
+                  {/* Enhanced background elements */}
+                  {mapType === 'map' && (
+                    <>
+                      {/* Campus green areas */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {/* Main campus green */}
+                        <div 
+                          className="absolute vegetation-pattern opacity-30"
+                          style={{
+                            left: '300px', top: '180px', width: '266px', height: '220px',
+                            background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+                            borderRadius: '20px'
+                          }}
+                        />
+                        
+                        {/* Sports area */}
+                        <div 
+                          className="absolute"
+                          style={{
+                            left: '100px', top: '300px', width: '80px', height: '150px',
+                            background: 'linear-gradient(90deg, #22c55e, #16a34a)',
+                            borderRadius: '10px',
+                            opacity: '0.6'
+                          }}
+                        />
+                        
+                        {/* Water feature */}
+                        <div 
+                          className="water-feature absolute"
+                          style={{
+                            left: '700px', top: '420px', width: '60px', height: '60px'
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+                  
+                  {/* Enhanced Roads Network */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                    <defs>
+                      <linearGradient id="roadGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="50%" stopColor="#f8f9fa" />
+                        <stop offset="100%" stopColor="#ffffff" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Primary Roads */}
+                    <g className="road-primary">
+                      {/* Perimeter roads */}
+                      <path d="M 80,100 L 820,100" stroke="#e5e7eb" strokeWidth="12" strokeLinecap="round" />
+                      <path d="M 820,100 L 820,580" stroke="#e5e7eb" strokeWidth="12" strokeLinecap="round" />
+                      <path d="M 80,580 L 820,580" stroke="#e5e7eb" strokeWidth="12" strokeLinecap="round" />
+                      <path d="M 80,100 L 80,580" stroke="#e5e7eb" strokeWidth="12" strokeLinecap="round" />
+                      
+                      {/* Main campus roads */}
+                      <path d="M 433,100 L 433,580" stroke="url(#roadGradient)" strokeWidth="10" strokeLinecap="round" />
+                      <path d="M 80,325 L 820,325" stroke="url(#roadGradient)" strokeWidth="10" strokeLinecap="round" />
+                    </g>
+                    
+                    {/* Secondary Roads */}
+                    <g className="road-secondary">
+                      <path d="M 150,200 L 720,200" stroke="#f8f9fa" strokeWidth="8" strokeLinecap="round" />
+                      <path d="M 150,450 L 720,450" stroke="#f8f9fa" strokeWidth="8" strokeLinecap="round" />
+                      <path d="M 216,120 L 216,560" stroke="#f8f9fa" strokeWidth="8" strokeLinecap="round" />
+                      <path d="M 650,120 L 650,560" stroke="#f8f9fa" strokeWidth="8" strokeLinecap="round" />
+                    </g>
+                    
+                    {/* Traffic lights */}
+                    <circle cx="433" cy="200" r="3" className="traffic-light" />
+                    <circle cx="433" cy="325" r="3" className="traffic-light" />
+                    <circle cx="433" cy="450" r="3" className="traffic-light" />
+                  </svg>
+                  
+                  {/* Enhanced Buildings */}
+                  {buildings.map(building => {
+                    const isSelected = selectedBuilding && selectedBuilding.id === building.id;
+                    const isDestination = endPoint === building.name;
+                    
+                    return (
+                      <Building 
+                        key={building.id}
+                        building={building}
+                        isSelected={isSelected}
+                        isDestination={isDestination}
+                        mapType={mapType}
+                        onClick={handleBuildingClick}
+                      />
+                    );
+                  })}
+                  
+                  {/* Enhanced My Location */}
+                  {showMyLocation && location && (
+                    <div 
+                      className="absolute location-pulse"
+                      style={{
+                        left: location.mapX - 15,
+                        top: location.mapY - 15,
+                        width: 30,
+                        height: 30
+                      }}
+                    >
+                      <div className={`w-8 h-8 rounded-full border-4 border-white absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 shadow-lg ${
+                        location.isOnCampus ? 'bg-blue-500' : 'bg-orange-500'
+                      }`}>
+                        <div className="w-3 h-3 bg-white rounded-full absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                      </div>
+                      
+                      {/* Location tooltip */}
+                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1 rounded-full whitespace-nowrap shadow-lg">
+                        📍 You are here
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Enhanced Navigation Route */}
+                  {currentRoute && (
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 15 }}>
+                      <defs>
+                        <filter id="routeGlow" x="-30%" y="-30%" width="160%" height="160%">
+                          <feGaussianBlur stdDeviation="3" result="blur" />
+                          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                        <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#4285F4" stopOpacity="1" />
+                          <stop offset="50%" stopColor="#34A853" stopOpacity="1" />
+                          <stop offset="100%" stopColor="#EA4335" stopOpacity="1" />
+                        </linearGradient>
+                      </defs>
+                      
+                      {/* Route shadow */}
+                      <path
+                        d={`M ${currentRoute.path.map(p => `${p.x},${p.y}`).join(' L ')}`}
+                        stroke="rgba(0,0,0,0.3)"
+                        strokeWidth="10"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      
+                      {/* Main route path */}
+                      <path
+                        d={`M ${currentRoute.path.map(p => `${p.x},${p.y}`).join(' L ')}`}
+                        stroke="url(#routeGradient)"
+                        strokeWidth="8"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        filter="url(#routeGlow)"
+                        className={`route-path-enhanced ${isNavigating ? 'route-animated' : ''}`}
+                      />
+                      
+                      {/* Route center line */}
+                      <path
+                        d={`M ${currentRoute.path.map(p => `${p.x},${p.y}`).join(' L ')}`}
+                        stroke="#ffffff"
+                        strokeWidth="3"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        opacity="0.9"
+                      />
+                      
+                      {/* Enhanced start marker */}
+                      <g className="route-marker">
+                        <circle 
+                          cx={currentRoute.path[0].x} 
+                          cy={currentRoute.path[0].y} 
+                          r="14" 
+                          fill="#4285F4" 
+                          stroke="#fff" 
+                          strokeWidth="4" 
+                        />
+                        <text 
+                          x={currentRoute.path[0].x} 
+                          y={currentRoute.path[0].y + 5} 
+                          textAnchor="middle" 
+                          fontSize="12" 
+                          fill="white" 
+                          fontWeight="bold"
+                        >
+                          A
+                        </text>
+                      </g>
+                      
+                      {/* Enhanced end marker */}
+                      <g className="route-marker">
+                        <circle 
+                          cx={currentRoute.path[currentRoute.path.length-1].x} 
+                          cy={currentRoute.path[currentRoute.path.length-1].y} 
+                          r="14" 
+                          fill="#ea4335" 
+                          stroke="#fff" 
+                          strokeWidth="4" 
+                        />
+                        <text 
+                          x={currentRoute.path[currentRoute.path.length-1].x} 
+                          y={currentRoute.path[currentRoute.path.length-1].y + 5} 
+                          textAnchor="middle" 
+                          fontSize="12" 
+                          fill="white" 
+                          fontWeight="bold"
+                        >
+                          B
+                        </text>
+                      </g>
+                    </svg>
+                  )}
+
+                  {/* Navigation overlay */}
+                  {isNavigating && currentStep >= 0 && currentRoute && (
+                    <div className="absolute pointer-events-none z-20">
+                      <div 
+                        className="absolute"
+                        style={{
+                          left: currentRoute.directions[currentStep].point.x - 30,
+                          top: currentRoute.directions[currentStep].point.y - 50,
+                          width: 60,
+                          height: 50
+                        }}
+                      >
+                        <div className="nav-step-indicator text-white rounded-xl p-3 text-xs text-center shadow-xl border-2 border-white animate-bounce">
+                          <div className="font-bold">Step {currentStep + 1}</div>
+                          <i className="material-icons text-lg">navigation</i>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Enhanced Search Results Dropdown */}
+                {searchResults.length > 0 && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-2xl bg-white shadow-2xl rounded-b-xl overflow-hidden mt-16 z-20 fade-in border border-gray-200">
+                    <div className="max-h-96 overflow-y-auto">
+                      {searchResults.map(building => (
+                        <div 
+                          key={building.id}
+                          className="search-suggestion p-4 border-b border-gray-100 cursor-pointer"
+                          onClick={() => {
+                            handleBuildingClick(building);
+                            setSearchTerm('');
+                          }}
+                        >
+                          <div className="flex items-start space-x-4">
+                            <div 
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md flex-shrink-0"
+                              style={{ backgroundColor: getBuildingColor(building).primary }}
+                            >
+                              <i className="material-icons text-sm">{getBuildingIcon(building)}</i>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900">{building.name}</div>
+                              <div className="text-gray-500 text-sm">{building.type}</div>
+                              {building.description && (
+                                <div className="text-gray-600 text-sm mt-1 truncate">{building.description}</div>
+                              )}
+                              {building.openHours && (
+                                <div className="text-gray-400 text-xs mt-1 flex items-center">
+                                  <i className="material-icons text-xs mr-1">schedule</i>
+                                  {building.openHours}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              {building.rating && (
+                                <div className="flex items-center mb-1">
+                                  <span className="text-yellow-500 mr-1">★</span>
+                                  <span className="text-gray-700 text-sm font-medium">{building.rating}</span>
+                                </div>
+                              )}
+                              {building.occupancy && (
+                                <div className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                  building.occupancy > 80 ? 'bg-red-100 text-red-700' : 
+                                  building.occupancy > 50 ? 'bg-yellow-100 text-yellow-700' : 
+                                  'bg-green-100 text-green-700'
+                                }`}>
+                                  {building.occupancy}% full
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Enhanced Map Controls */}
+                <div className="absolute bottom-40 right-4 flex flex-col space-y-3">
+                  {/* Zoom controls */}
+                  <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                    <button 
+                      className="w-12 h-12 flex items-center justify-center hover:bg-gray-50 border-b border-gray-200 button-interactive"
+                      onClick={() => setZoom(Math.min(zoom + 0.1, 1.8))}
+                      aria-label="Zoom in"
+                    >
+                      <i className="material-icons text-gray-700">add</i>
+                    </button>
+                    <button 
+                      className="w-12 h-12 flex items-center justify-center hover:bg-gray-50 button-interactive"
+                      onClick={() => setZoom(Math.max(zoom - 0.1, 0.6))}
+                      aria-label="Zoom out"
+                    >
+                      <i className="material-icons text-gray-700">remove</i>
+                    </button>
+                  </div>
+                  
+                  {/* My location button */}
+                  <button 
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 button-interactive border-2 ${
+                      showMyLocation && location ? 
+                        (location.isOnCampus ? 'bg-blue-500 text-white border-blue-500' : 'bg-orange-500 text-white border-orange-500') : 
+                        'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
+                    } ${loading ? 'animate-pulse bg-blue-300' : ''}`}
+                    onClick={handleMyLocationClick}
+                    disabled={loading}
+                    aria-label={
+                      loading ? "Getting location..." : 
+                      showMyLocation ? "Hide my location" : "Show my location"
+                    }
+                  >
+                    {loading ? (
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <i className="material-icons">
+                        {showMyLocation && location ? 'my_location' : 'location_searching'}
+                      </i>
+                    )}
+                  </button>
+                </div>
+                
+                <div className="absolute bottom-4 left-4 bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+                  <div className="flex">
+                    <button 
+                      className={`px-6 py-3 transition-all button-interactive flex items-center space-x-2 ${
+                        mapType === 'map' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                      onClick={() => handleMapTypeChange('map')}
+                      aria-label="Show map view"
+                    >
+                      <i className="material-icons text-sm">map</i>
+                      <span className="font-medium">Map</span>
+                    </button>
+                    <button 
+                      className="px-6 py-3 transition-all button-interactive flex items-center space-x-2 border-l border-gray-200 text-gray-700 hover:bg-gray-50"
+                      onClick={() => handleMapTypeChange('satellite')}
+                      aria-label="Open satellite view in Google Maps"
+                      title="Open Google Maps satellite view of SVSU"
+                    >
+                      <i className="material-icons text-sm">satellite</i>
+                      <span className="font-medium">Satellite</span>
+                      <i className="material-icons text-xs ml-1">open_in_new</i>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* SVSU Attribution */}
+                <div className="absolute bottom-2 right-20 opacity-60">
+                  <div className="flex items-center space-x-2 text-xs text-gray-600">
+                    <span>© SVSU Dudhola</span>
+                    <span>•</span>
+                    <span>Map data ©2024</span>
+                    <span>•</span>
+                    <span>श्री विश्वकर्मा कौशल्य विश्वविद्यालय</span>
+                  </div>
+                </div>
+                
+                {/* Enhanced Status indicators */}
+                {error && (
+                  <div className="absolute top-20 right-4 bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded-xl max-w-sm fade-in shadow-lg status-indicator">
+                    <div className="flex items-start">
+                      <i className="material-icons text-orange-600 text-sm mr-3 mt-0.5">info</i>
+                      <div>
+                        <div className="font-medium text-sm">Location Status</div>
+                        <div className="text-xs mt-1">{error}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {showMyLocation && location && !loading && (
+                  <div className="absolute top-20 right-4 bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-xl fade-in shadow-lg status-indicator">
+                    <div className="flex items-center">
+                      <div className={`w-3 h-3 rounded-full mr-3 ${location.isOnCampus ? 'bg-green-500' : 'bg-orange-500'}`}></div>
+                      <div>
+                        <div className="font-medium text-sm flex items-center">
+                          <i className="material-icons text-sm mr-1">location_on</i>
+                          {location.isOnCampus ? 'On Campus' : 'Off Campus'}
+                        </div>
+                        {location.accuracy && (
+                          <div className="text-xs mt-1">Accuracy: ±{Math.round(location.accuracy)}m</div>
+                        )}
+                        {location.isFallback && (
+                          <div className="text-xs mt-1 text-green-600">Demo location active</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {loading && (
+                  <div className="absolute top-20 right-4 bg-blue-50 border border-blue-300 text-blue-800 px-4 py-3 rounded-xl fade-in shadow-lg status-indicator">
+                    <div className="flex items-center">
+                      <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                      <div>
+                        <div className="font-medium text-sm">Getting Location...</div>
+                        <div className="text-xs mt-1">Please allow location access</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Navigation Status */}
+                {isNavigating && (
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-3 rounded-full font-medium fade-in shadow-lg live-update">
+                    <div className="flex items-center space-x-2">
+                      <i className="material-icons animate-pulse">navigation</i>
+                      <span>Navigation Active - Step {currentStep + 1} of {currentRoute?.directions.length}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Real-time campus status */}
+                <div className="absolute top-4 right-1/3 bg-white bg-opacity-95 backdrop-blur-sm rounded-xl p-3 shadow-lg text-sm border border-gray-200 status-indicator">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                      <span className="text-xs font-medium text-gray-700">SVSU Online</span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      🌡️ {weather.temperature}°C
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Building Info Popup */}
+                {selectedBuilding && !showDirections && (
+                  <BuildingInfoPopup 
+                    building={selectedBuilding}
+                    onClose={() => setSelectedBuilding(null)}
+                    onDirections={() => {
+                      setEndPoint(selectedBuilding.name);
+                      setShowDirections(true);
+                      speak(`Getting directions to ${selectedBuilding.name}`);
+                    }}
+                    weather={weather}
+                  />
+                )}
+              </div>
+            </div>
+            
+            {/* Enhanced Emergency Features */}
+            <EmergencyFeatures addNotification={addNotification} />
+            
+            {/* Enhanced Accessibility Panel */}
+            <AccessibilityPanel 
+              settings={accessibilitySettings} 
+              toggleSetting={toggleSetting} 
+            />
+          </div>
+        </MapContext.Provider>
+      );
+    };
+
+    // Render the enhanced React component
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<SVSUGoogleMapsClone />);
+  </script>
+</body>
+</html>
