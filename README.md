@@ -159,7 +159,7 @@ index.html
 * Route distance & estimated time
 * Walking / Driving / Cycling modes
 * Live navigation steps
-* 
+* https://github.com/pinkidagar18/University-Navigation-System/blob/main/Screenshot%202025-12-15%20205102.png
 
 ## ✨ What Makes This Project Advanced
 
