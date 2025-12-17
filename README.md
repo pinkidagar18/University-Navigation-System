@@ -1,4 +1,4 @@
-# SVSU Dudhola Navigation System – Enhanced
+# SVSU Dudhola Navigation System 
 
 An advanced, interactive **campus navigation web application** designed for **Shri Vishwakarma Skill University (SVSU), Dudhola**. The system helps students, visitors, and staff easily find buildings, facilities, and routes across the campus using a **Google Maps–like interface**, real-time location tracking, and voice-assisted navigation.
 
