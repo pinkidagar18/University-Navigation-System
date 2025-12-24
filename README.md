@@ -164,13 +164,13 @@ svsu-navigation-system/
 ![Welcome Screen](images/welcome_page.png)
 
 ### Main Navigation Interface
-![Home Page](images/home_page (3).png)
+![Home Page](images/home_page.png)
 
 ### Active Navigation
-![Result Page](images/result_page (2).png)
+![Result Page](images/result_page.png)
 
 ### Reached
-![Result Page](images/result_page (3).png)
+![Result Page](images/reached_page.png)
 
 
 ---
